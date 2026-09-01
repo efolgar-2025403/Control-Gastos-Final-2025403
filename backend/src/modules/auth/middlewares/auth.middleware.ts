@@ -1,8 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
+export interface AuthenticatedRequest extends Request {
+  user?: {
+    id: number;
+    email?: string;
+    [key: string]: any;
+  };
+}
+
 export const authenticateToken = (
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) => {
@@ -27,7 +35,8 @@ export const authenticateToken = (
     if (err) {
       if (err.name === 'TokenExpiredError') {
         return res.status(401).json({
-          message: 'La sesión ha expirado, por favor vuelve a iniciar sesión'
+          message:
+            'La sesión ha expirado, por favor vuelve a iniciar sesión'
         });
       }
 
@@ -36,7 +45,12 @@ export const authenticateToken = (
       });
     }
 
-    (req as any).user = decoded;
+    req.user = decoded as {
+      id: number;
+      email?: string;
+      [key: string]: any;
+    };
+
     next();
   });
 };
