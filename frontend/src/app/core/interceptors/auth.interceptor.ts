@@ -8,19 +8,19 @@ import {
 } from 'rxjs';
 
 import { inject } from '@angular/core';
-import { Router } from '@angular/router';
+
+import { AuthService } from '../services/auth.service';
 
 export const authInterceptor: HttpInterceptorFn = (
   req,
   next
 ) => {
 
-  const router = inject(Router);
+  const authService =
+    inject(AuthService);
 
   const token =
-    localStorage.getItem(
-      'control-gastos-token'
-    );
+    authService.getToken();
 
   if (!token) {
     return next(req);
@@ -29,30 +29,20 @@ export const authInterceptor: HttpInterceptorFn = (
   const authenticatedRequest =
     req.clone({
       setHeaders: {
-        Authorization: `Bearer ${token}`
+        Authorization:
+          `Bearer ${token}`
       }
     });
 
-  return next(authenticatedRequest).pipe(
+  return next(
+    authenticatedRequest
+  ).pipe(
 
     catchError(error => {
 
       if (error.status === 401) {
 
-        localStorage.removeItem(
-          'control-gastos-token'
-        );
-
-        localStorage.removeItem(
-          'control-gastos-user'
-        );
-
-        localStorage.setItem(
-          'control-gastos-session-expired',
-          'Su sesión ha expirado. Por seguridad, debe iniciar sesión nuevamente.'
-        );
-
-        router.navigate(['/login']);
+        authService.logout(true);
 
       }
 
@@ -63,5 +53,4 @@ export const authInterceptor: HttpInterceptorFn = (
     })
 
   );
-
 };
