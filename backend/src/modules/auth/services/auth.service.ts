@@ -135,7 +135,7 @@ export class AuthService {
     }
 
     const expiresIn =
-      process.env.JWT_EXPIRES_IN || '1m';
+      process.env.JWT_EXPIRES_IN || '2h';
 
     return jwt.sign(
       {
