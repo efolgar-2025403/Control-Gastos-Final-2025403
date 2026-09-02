@@ -10,15 +10,21 @@ import { AuthRepository } from '../repositories/auth.repository.js';
 
 export class AuthService {
 
-  private readonly repository = new AuthRepository();
+  private readonly repository =
+    new AuthRepository();
 
   async register(data: RegisterUserDTO) {
 
-    const name = data.name.trim();
-    const email = data.email.trim().toLowerCase();
+    const name =
+      data.name.trim();
+
+    const email =
+      data.email.trim().toLowerCase();
 
     if (!name || !email || !data.password) {
-      throw new Error('Todos los campos son obligatorios');
+      throw new Error(
+        'Todos los campos son obligatorios'
+      );
     }
 
     if (data.password.length < 6) {
@@ -37,13 +43,17 @@ export class AuthService {
     }
 
     const passwordHash =
-      await bcrypt.hash(data.password, 10);
+      await bcrypt.hash(
+        data.password,
+        10
+      );
 
-    const user = await this.repository.create(
-      name,
-      email,
-      passwordHash
-    );
+    const user =
+      await this.repository.create(
+        name,
+        email,
+        passwordHash
+      );
 
     return {
       id: user.id,
@@ -54,7 +64,8 @@ export class AuthService {
 
   async login(data: LoginUserDTO) {
 
-    const email = data.email.trim().toLowerCase();
+    const email =
+      data.email.trim().toLowerCase();
 
     if (!email || !data.password) {
       throw new Error(
@@ -83,25 +94,12 @@ export class AuthService {
       );
     }
 
-    const jwtSecret = process.env.JWT_SECRET;
-
-    if (!jwtSecret) {
-      throw new Error(
-        'JWT_SECRET no está configurado'
-      );
-    }
-
-    const token = jwt.sign(
-      {
+    const token =
+      this.signToken({
         id: user.id,
         name: user.name,
         email: user.email
-      },
-      jwtSecret,
-      {
-        expiresIn: '20m'
-      }
-    );
+      });
 
     return {
       user: {
@@ -111,5 +109,56 @@ export class AuthService {
       },
       token
     };
+  }
+
+  /**
+   * Genera el JWT de la sesión.
+   *
+   * El tiempo de expiración se obtiene desde
+   * JWT_EXPIRES_IN del archivo .env.
+   *
+   * Por defecto se utilizan 20 minutos.
+   */
+  private signToken(user: {
+    id: number;
+    name: string;
+    email: string;
+  }): string {
+
+    const secret =
+      process.env.JWT_SECRET;
+
+    if (!secret) {
+      throw new Error(
+        'JWT_SECRET no está configurado'
+      );
+    }
+
+    const expiresIn =
+      process.env.JWT_EXPIRES_IN || '1m';
+
+    return jwt.sign(
+      {
+        id: user.id,
+        name: user.name,
+        email: user.email
+      },
+      secret,
+      {
+        expiresIn: expiresIn as any
+      }
+    );
+  }
+
+  /**
+   * Renueva el JWT de una sesión activa.
+   */
+  refreshToken(user: {
+    id: number;
+    name: string;
+    email: string;
+  }): string {
+
+    return this.signToken(user);
   }
 }
