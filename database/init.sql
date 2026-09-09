@@ -12,7 +12,7 @@ CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(150) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -37,24 +37,16 @@ CREATE TABLE categories (
 
 CREATE TABLE expenses (
     id BIGSERIAL PRIMARY KEY,
-
     amount NUMERIC(12, 2) NOT NULL
         CHECK (amount > 0),
-
     description VARCHAR(255),
-
     date DATE NOT NULL,
-
     category_id BIGINT NOT NULL,
-
     user_id BIGINT NOT NULL,
-
     created_at TIMESTAMPTZ NOT NULL
         DEFAULT CURRENT_TIMESTAMP,
-
     updated_at TIMESTAMPTZ NOT NULL
         DEFAULT CURRENT_TIMESTAMP,
-
 
     CONSTRAINT fk_expenses_category
         FOREIGN KEY (category_id)
@@ -90,24 +82,16 @@ CREATE INDEX idx_expenses_user_id
 
 CREATE TABLE incomes (
     id BIGSERIAL PRIMARY KEY,
-
     amount NUMERIC(12, 2) NOT NULL
         CHECK (amount > 0),
-
     description VARCHAR(255),
-
     date DATE NOT NULL,
-
     category_id BIGINT NOT NULL,
-
     user_id BIGINT NOT NULL,
-
     created_at TIMESTAMPTZ NOT NULL
         DEFAULT CURRENT_TIMESTAMP,
-
     updated_at TIMESTAMPTZ NOT NULL
         DEFAULT CURRENT_TIMESTAMP,
-
 
     CONSTRAINT fk_incomes_category
         FOREIGN KEY (category_id)
